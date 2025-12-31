@@ -4,6 +4,7 @@ Copyright © 2025 ZOLLIDAN zollidan@aol.com
 package cmd
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
 	"os"
@@ -18,7 +19,10 @@ var installCmd = &cobra.Command{
 	Long: `A longer description `,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		info, err := os.Stat(args[0])
+
+		zipPath := args[0]
+
+		info, err := os.Stat(zipPath)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				fmt.Printf("Error: File does not exist, %s", err.Error())
@@ -29,6 +33,18 @@ var installCmd = &cobra.Command{
 		}
 
 		fmt.Println(info.Name())
+
+		r, err := zip.OpenReader(zipPath)
+		if err != nil {
+			fmt.Printf("Error opening zip file: %s", err.Error())
+			return
+		}
+
+		defer r.Close()
+
+		for _, f := range r.File {
+			fmt.Println(f.Name)
+		}
 	},
 }
 
